@@ -47,13 +47,25 @@ int main()
 
         // Шифруем данные RC4
         rc4EncryptDecrypt(audioData, key_shaev);
-    }
+
+        // Записываем результат (зашифрованные данные) в новый WAV файл
+        std::ofstream outputFile("./homework/homework/outfile_encrypted.wav", std::ios::binary);
+        if (!outputFile) {
+            std::cerr << "Ошибка при открытии выходного файла!" << std::endl;
+            return 1;
+        }
+
+        // Записываем заголовок и измененные аудиоданные
+        outputFile.write(reinterpret_cast<char*>(header.data()), header.size());
+        outputFile.write(reinterpret_cast<char*>(audioData.data()), audioData.size());
+        outputFile.close();
+        }
     case 2: // demidov TwoFish
     {
         // Ключ (16 байт для 128-битного ключа)
         BYTE key[16] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
 
-        // Шифруем данные TwoFish
+        // Шифруем данные TwoFish и записываем в новый Wav файл
         encryptWavFile("./homework/homework/input_audio.wav", "./homework/homework/outfile_encrypted.wav", key, sizeof(key));
     }
     }
@@ -62,18 +74,6 @@ int main()
     std::chrono::duration<double> duration = end - start;
 
     std::cout << "Время шифрования: " << duration.count() << " секунд" << std::endl;
-
-    // Записываем результат (зашифрованные данные) в новый WAV файл
-    std::ofstream outputFile("./homework/homework/outfile_encrypted.wav", std::ios::binary);
-    if (!outputFile) {
-        std::cerr << "Ошибка при открытии выходного файла!" << std::endl;
-        return 1;
-    }
-
-    // Записываем заголовок и измененные аудиоданные
-    outputFile.write(reinterpret_cast<char*>(header.data()), header.size());
-    outputFile.write(reinterpret_cast<char*>(audioData.data()), audioData.size());
-    outputFile.close();
 
     return 0;
 }

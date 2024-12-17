@@ -273,16 +273,3 @@ UINT TwoFish::ROR(UINT x, BYTE shift){
     if (shl == 0) return x;
     return ((x >> shl) | (x << (sizeof(x)*8 - shl)));
 }
-
-// int main(){
-//     char key[] = "Привет Марк Я уже жду 12313Привет Марк Я уже жду 12313Привет Марк Я уже жду 12313Привет Марк Я уже жду 12313Привет Марк Я уже жду 12313Привет Марк Я уже жду 12313";
-//     TwoFish tf(key, sizeof(key));
-//     BYTE block[32] = {0};
-//     FILE* o = fopen("tratata.txt", "wb");
-//     fwrite(block, 16, 1, o);
-//     tf.encrypt(block);
-//     fwrite(block, 16, 1, o);
-//     tf.decrypt(block);
-//     fwrite(block, 16, 1, o);
-//     fclose(o);
-// }
