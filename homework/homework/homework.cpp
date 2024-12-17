@@ -4,6 +4,7 @@
 #include <chrono>
 #include "shaev.h" 
 #include "demidov/demidov.cpp"
+#include "petuhova/группач.cpp"
 
 using std::cin;
 
@@ -27,7 +28,7 @@ int main()
     inputFile.close();
 
     short int menu_choice;
-    std::cout << "1 - Шаев\n" << "2 - Демидов" << "";
+    std::cout << "1 - Шаев\n" << "2 - Демидов" << "3 - Петухова";
 
     while (!(cin >> menu_choice) || (cin.peek() != '\n') || (menu_choice < 1 || menu_choice > 5)) {
         cin.clear();
@@ -61,6 +62,14 @@ int main()
         outputFile.close();
         }
     case 2: // demidov TwoFish
+    {
+        // Ключ (16 байт для 128-битного ключа)
+        BYTE key[16] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
+
+        // Шифруем данные TwoFish и записываем в новый Wav файл
+        encryptWavFile("./homework/homework/input_audio.wav", "./homework/homework/outfile_encrypted.wav", key, sizeof(key));
+    }
+        case 3: // Petuhova Furie
     {
         // Ключ (16 байт для 128-битного ключа)
         BYTE key[16] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
