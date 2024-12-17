@@ -71,11 +71,7 @@ int main()
     }
         case 3: // Petuhova Furie
     {
-        // Ключ (16 байт для 128-битного ключа)
-        BYTE key[16] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
-
-        // Шифруем данные TwoFish и записываем в новый Wav файл
-        encryptWavFile("./homework/homework/input_audio.wav", "./homework/homework/outfile_encrypted.wav", key, sizeof(key));
+        main();
     }
     }
 
