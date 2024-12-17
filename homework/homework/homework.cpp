@@ -3,17 +3,18 @@
 #include <vector>
 #include <chrono>
 #include "shaev.h" 
+#include "demidov/demidov.cpp"
 
 using std::cin;
 
 int main()
 {
-    const std::string inputFilePath = "input_audio.wav";
+    const std::string inputFilePath = "./homework/homework/input_audio.wav";
 
     // Открываем входной файл
     std::ifstream inputFile(inputFilePath, std::ios::binary);
     if (!inputFile) {
-        std::cerr << "Ошибка при открытии входного файла!" << std::endl;
+        std::cerr << "Ошибка открытия файла!" << std::endl;
         return 1;
     }
 
@@ -26,7 +27,7 @@ int main()
     inputFile.close();
 
     short int menu_choice;
-    std::cout << "1 - Шаев\n" << "";
+    std::cout << "1 - Шаев\n" << "2 - Демидов" << "";
 
     while (!(cin >> menu_choice) || (cin.peek() != '\n') || (menu_choice < 1 || menu_choice > 5)) {
         cin.clear();
@@ -47,6 +48,14 @@ int main()
         // Шифруем данные RC4
         rc4EncryptDecrypt(audioData, key_shaev);
     }
+    case 2: // demidov TwoFish
+    {
+        // Ключ (16 байт для 128-битного ключа)
+        BYTE key[16] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
+
+        // Шифруем данные TwoFish
+        encryptWavFile("./homework/homework/input_audio.wav", "./homework/homework/outfile_encrypted.wav", key, sizeof(key));
+    }
     }
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -55,7 +64,7 @@ int main()
     std::cout << "Время шифрования: " << duration.count() << " секунд" << std::endl;
 
     // Записываем результат (зашифрованные данные) в новый WAV файл
-    std::ofstream outputFile("outfile_encrypted.wav", std::ios::binary);
+    std::ofstream outputFile("./homework/homework/outfile_encrypted.wav", std::ios::binary);
     if (!outputFile) {
         std::cerr << "Ошибка при открытии выходного файла!" << std::endl;
         return 1;
