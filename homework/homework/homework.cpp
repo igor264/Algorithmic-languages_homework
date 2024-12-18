@@ -5,6 +5,7 @@
 #include "shaev.h" 
 #include "demidov/demidov.cpp"
 #include "petuhova/группач.cpp"
+#include "HW_Verlevsky.cpp"
 
 using std::cin;
 
@@ -73,6 +74,9 @@ int main()
     {
         main();
     }
+        case 4: //Verlevsky
+    {
+        start(inputFilePath);
     }
 
     auto end = std::chrono::high_resolution_clock::now();
