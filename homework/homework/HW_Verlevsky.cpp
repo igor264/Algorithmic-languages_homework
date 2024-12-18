@@ -109,7 +109,7 @@ int ECC::modInverse(int k, int p) {
     throw runtime_error("Обратный элемент не существует.");
 }
 
-int main() {
+int start() {
     setlocale(LC_ALL, "RUS");
     srand(static_cast<unsigned int>(time(0)));
 
