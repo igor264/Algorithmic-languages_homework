@@ -72,7 +72,7 @@ int main()
     }
         case 3: // Petuhova Furie
     {
-        main();
+        main(inputFilePath);
     }
         case 4: //Verlevsky
     {
