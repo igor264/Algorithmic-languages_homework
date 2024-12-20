@@ -43,17 +43,14 @@ void multiplyCipher(std::vector<Complex>& data) {
     size_t dataSize = data.size();
 
     for (size_t i = 0; i < dataSize; ++i) {
-        if ((i + 1) % 2 == 0) data[i] /= 4;
-        if ((i + 1) % 3 == 0) data[i] *= i;
-        if ((i + 1) % 5 == 0) data[i] -= 45;
-        if ((i + 1) % 7 == 0) data[i] *= 0.5;
-        if ((i + 1) % 11 == 0) data[i] /= 12;
-        if ((i + 1) % 17 == 0) data[i] -= 100;
-        if ((i + 1) % 19 == 0) data[i] *= -70;
-        if ((i + 1) % 23 == 0) data[i] += 150;
-        if ((i + 1) % 29 == 0) data[i] /= 20;
-        if ((i + 1) % 31 == 0) data[i] *= 1.2;
-        if ((i + 1) % 37 == 0) data[i] /= -1.8;
+        if ((i + 1) % 2 == 0) data[i] = Complex(data[i].real() / 4, data[i].imag());
+        if ((i + 1) % 3 == 0) data[i] = Complex(data[i].real() * 10, data[i].imag());
+        if ((i + 1) % 5 == 0) data[i] = Complex(data[i].real() -4, data[i].imag());
+        if ((i + 1) % 7 == 0) data[i] = Complex(data[i].real() *  0.5, data[i].imag());
+        if ((i + 1) % 11 == 0) data[i] = Complex(data[i].real() / 12, data[i].imag());
+        if ((i + 1) % 17 == 0) data[i] = Complex(data[i].real() - 100, data[i].imag());
+        if ((i + 1) % 19 == 0) data[i] = Complex(data[i].real() * (-70), data[i].imag());
+
     }
 }
 
@@ -62,17 +59,13 @@ void multiplyDecipher(std::vector<Complex>& data) {
     size_t dataSize = data.size();
 
     for (size_t i = 0; i < dataSize; ++i) {
-        if ((i + 1) % 37 == 0) data[i] *= -1.8;
-        if ((i + 1) % 31 == 0) data[i] /= 1.2;
-        if ((i + 1) % 29 == 0) data[i] *= 20;
-        if ((i + 1) % 23 == 0) data[i] -= 150;
-        if ((i + 1) % 19 == 0) data[i] /= -70;
-        if ((i + 1) % 17 == 0) data[i] += 100;
-        if ((i + 1) % 13 == 0) data[i] /= 100;
-        if ((i + 1) % 11 == 0) data[i] *= 12;
-        if ((i + 1) % 7 == 0) data[i] /= 0.5;
-        if ((i + 1) % 5 == 0) data[i] += 45;
-        if ((i + 1) % 3 == 0) data[i] /= i;
-        if ((i + 1) % 2 == 0) data[i] *= 4;
+
+        if ((i + 1) % 19 == 0) data[i] = Complex(data[i].real() / (-70), data[i].imag());
+        if ((i + 1) % 17 == 0) data[i] = Complex(data[i].real() + 100, data[i].imag());
+        if ((i + 1) % 11 == 0) data[i] = Complex(data[i].real() * 12, data[i].imag());
+        if ((i + 1) % 7 == 0) data[i] = Complex(data[i].real() / 0.5, data[i].imag());
+        if ((i + 1) % 5 == 0) data[i] = Complex(data[i].real() + 45, data[i].imag());
+        if ((i + 1) % 3 == 0) data[i] = Complex(data[i].real() / 10, data[i].imag());
+        if ((i + 1) % 2 == 0) data[i] = Complex(data[i].real() * 4, data[i].imag());
     }
 }
