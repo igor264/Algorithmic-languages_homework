@@ -5,7 +5,7 @@
 #include "shaev.h" 
 #include "demidov/demidov.cpp"
 // #include "petuhova/группач.cpp"
-// #include "HW_Verlevsky.cpp"
+#include "HW_Verlevsky.cpp"
 
 using std::cin;
 
@@ -67,7 +67,7 @@ int main()
         }
         case 4: //Verlevsky ECC
         {
-            // start(audioData);
+            ECCprocessAudioFile(audioData);
         }
         case 5: // Mudrov DES
         {
