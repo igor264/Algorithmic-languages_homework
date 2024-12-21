@@ -1,49 +1,50 @@
 #include "TwoFish.h"
  
-/********************************Constructor*********************************/
-TwoFish::TwoFish(char *key, size_t length){
+/********************************Конструктор*********************************/
+TwoFish::TwoFish(char *key, size_t length) {
     BYTE *u_key = new BYTE[length];
-    for (int i=0;i < length; i++){
-        u_key[i] = (BYTE) key[i];
+    for (int i = 0; i < length; i++) {
+        u_key[i] = (BYTE) key[i]; // Преобразование символов ключа в байты
     }
-    keySchedule(u_key, length);
+    keySchedule(u_key, length); // Инициализация ключей (расписание ключей)
 }
  
 TwoFish::TwoFish(BYTE *key, size_t length){
     keySchedule(key, length);
 }
  
-/*********************************Destructor*********************************/
-TwoFish::~TwoFish(){
-    delete [] SBox;
+/*********************************Деструктор*********************************/
+TwoFish::~TwoFish() {
+    delete[] SBox; // Освобождение памяти, выделенной для SBox
 }
  
-/*********************************Interface**********************************/
+/*********************************Интерфейс**********************************/
 BYTE* TwoFish::encrypt(BYTE *plain){
  
-    UINT 
+    UINT // Разбиваем входные данные на 4 блока по 32 бита (A, B, C, D)
         A = (plain[0] << 24) + (plain[1] << 16) + (plain[2] << 8) + plain[3],
         B = (plain[4] << 24) + (plain[5] << 16) + (plain[6] << 8) + plain[7],
         C = (plain[8] << 24) + (plain[9] << 16) + (plain[10] << 8) + plain[11],
         D = (plain[12] << 24) + (plain[13] << 16) + (plain[14] << 8) + plain[15];
     
-    //whitening
+    // Входное отбеливание (выполняет XOR блоков данных с первыми четырьмя подключами) 
     A ^= keys[0];
     B ^= keys[1];
     C ^= keys[2];
     D ^= keys[3];
  
-    //sixteen roudns
+    //16 раундов шифрования. Реализация функции F
     for(int i = 0; i < 16; i++){
         unsigned long long tA = h(A, SBox, k);
         unsigned long long tB = h(ROL(B, 8), SBox, k); // ROL
  
-        D = ROL(D, 1); //ROL
+        D = ROL(D, 1); //ROL - Циклический сдвиг D на 1 бит влево
         C ^= ((tA + tB + keys[2 * i + 8]) & 0xFFFFFFFF); 
         D ^= ((tA + 2*tB + keys[2 * i + 9]) & 0xFFFFFFFF);
-        C = ROR(C, 1); //ROR
+        C = ROR(C, 1); //ROR - Циклический сдвиг D на 1 бит вправо
  
-        //swap until last round
+        // Обмен значениями между A, B, C и D (за исключением последнего раунда)
+        // Обеспечение диффузии данных
         if (i != 15) {
             UINT tmp = C;
             C = A;
@@ -54,12 +55,13 @@ BYTE* TwoFish::encrypt(BYTE *plain){
         }
     }
  
-    //whitening
+    // Выходное отбеливание (выполняет XOR блоков данных с последними четырьмя подключами) 
     A ^= keys[4];
     B ^= keys[5];
     C ^= keys[6];
     D ^= keys[7];
- 
+    
+    // Собираем зашифрованные блоки A, B, C и D обратно в 16 байтов и возвращаем их
     plain[0] = (A >> 24) & 0xFF;
     plain[1] = (A >> 16) & 0xFF;
     plain[2] = (A >> 8) & 0xFF;
@@ -84,23 +86,23 @@ void TwoFish::printSubkeys(){
         cout<<hex<<keys[i]<<endl;
     }
 }
-/*******************************System methods*******************************/
-void TwoFish::keySchedule(BYTE *user_key, size_t length){
-    short N = 0; //size of key
+
+/*******************************Системные методы*******************************/
+void TwoFish::keySchedule(BYTE *user_key, size_t length){ // 
+    short N = 0; // Определяем размер ключа
     if ( length > 192 ) {
         N = 256;
     } else if ((length > 128) && (length <=192)) {
         N = 192;
     } else N = 128;
- 
+    
+    // Преобразуем ключ пользователя в формат, необходимый алгоритму
     char *temp_key = new char[N];
- 
-    //Filling with 0
     for(int i = 0; i < N; i++){
-        temp_key[i] = ( i < length ) ? user_key[i] : 0;
+        temp_key[i] = ( i < length ) ? user_key[i] : 0; // Дополняет ключ нулями
     }   
  
-    //Initialization of variables
+    //Инициализация переменных
     k = N / 64;
  
     BYTE RS[4][8] = {
@@ -140,26 +142,25 @@ void TwoFish::keySchedule(BYTE *user_key, size_t length){
         }
     }
  
- 
-    //generation 32bit keys
+    // Генерируем 40 подключей (32-битных значений) с использованием функции h
     UINT ro = (1 << 24) + (1 << 16) + (1 << 8) + 1;
     for(int i = 0; i < 20; i++){
-        unsigned long long A = h( 2 * i * ro, Me, k); //???
-        unsigned long long B = h( (2 * i + 1) * ro, Mo, k); //????
+        unsigned long long A = h( 2 * i * ro, Me, k); 
+        unsigned long long B = h( (2 * i + 1) * ro, Mo, k); 
         B = ROL(B,8); //ROL
         keys[2 * i] = (A + B) & 0xFFFFFFFF;
         keys[2 * i + 1] = ROL(((A + 2 * B) & 0xFFFFFFFF), 9); //ROL
     }
 }
  
-unsigned long long TwoFish::h(UINT inputWord, UINT *inputWordArray, short ArraySize){ // функция h
-    BYTE x[4]; //splitted input word
+unsigned long long TwoFish::h(UINT inputWord, UINT *inputWordArray, short ArraySize){ // Метод h – нелинейное преобразование
+    BYTE x[4]; // Входное слово разбивается на 4 байта для применения функции q
     x[0] = (inputWord >> 24) & 0xFF;
     x[1] = (inputWord >> 16) & 0xFF;
     x[2] = (inputWord >> 8) & 0xFF;
     x[3] = inputWord & 0xFF;
     
-    BYTE **l = new BYTE*[ArraySize]; //splitted words of input array
+    BYTE **l = new BYTE*[ArraySize]; // Применяет несколько слоев функции q с таблицей SBox и массивом l
     for (int i = 0; i < ArraySize; i++) {
         l[i] = new BYTE[4];
         l[i][0] = (inputWordArray[i] >> 24) && 0xFF;
@@ -198,6 +199,7 @@ unsigned long long TwoFish::h(UINT inputWord, UINT *inputWordArray, short ArrayS
     y[2] = q((q((q(y[2], 0) ^ l[1][2]), 1) ^ l[0][2]), 1);
     y[3] = q((q((q(y[3], 1) ^ l[1][3]), 1) ^ l[0][3]), 0);
     
+    // Умножает результат функции q на матрицу MDS (Multiplication-Diffusion Scaling) для обеспечения диффузии.
     BYTE MDS[4][4] = {
         {0x01, 0xEF, 0x5B, 0x5B},
         {0x5B, 0xEF, 0xEF, 0x01},
@@ -217,10 +219,10 @@ unsigned long long TwoFish::h(UINT inputWord, UINT *inputWordArray, short ArrayS
     return H;
 }
  
-BYTE TwoFish::q(BYTE x, int op){
+BYTE TwoFish::q(BYTE x, int op){ // Метод q – нелинейное преобразование с использованием таблицы
     assert( (op == 0) || (op == 1));
-    const BYTE qt[2][4][16] = {
-        //permutation table for q0 operation
+    const BYTE qt[2][4][16] = { 
+         // Таблицы перестановок для q0
         {
             { 0x8, 0x1, 0x7, 0xD, 0x6, 0xF, 0x3, 0x2, 0x0, 0xB, 0x5, 0x9, 0xE, 0xC, 0xA, 0x4 },
             { 0xE, 0xC, 0xB, 0x8, 0x1, 0x2, 0x3, 0x5, 0xF, 0x4, 0xA, 0x6, 0x7, 0x0, 0x9, 0xD },
@@ -228,7 +230,7 @@ BYTE TwoFish::q(BYTE x, int op){
             { 0xD, 0x7, 0xF, 0x4, 0x1, 0x2, 0x6, 0xE, 0x9, 0xB, 0x3, 0x0, 0x8, 0x5, 0xC, 0xA }
         },
  
-        //permutation table for q1 operation
+         // Таблицы перестановок для q1
         {
             { 0x2, 0x8, 0xB, 0xD, 0xF, 0x7, 0x6, 0xE, 0x3, 0x1, 0x9, 0x4, 0x0, 0xA, 0xC, 0x5 },
             { 0x1, 0xE, 0x2, 0xB, 0x4, 0xC, 0x3, 0x7, 0x6, 0xD, 0xA, 0x5, 0xF, 0x9, 0x0, 0x8 },
@@ -237,7 +239,7 @@ BYTE TwoFish::q(BYTE x, int op){
         },
     };
  
-    //splitting byte into two nibbles
+    // Разбиваем байт на два полубайта (a и b) и применяет перестановки согласно таблицам q
     BYTE a0 = x / 16; 
     BYTE b0 = x % 16;
  
@@ -255,19 +257,19 @@ BYTE TwoFish::q(BYTE x, int op){
     return (16*b4 + a4);
 }
  
-//Right circular shift for 4 least significant bits
+// Циклический сдвиг вправо на 4 бит 
 BYTE TwoFish::ROR4(BYTE x){
     return (((x << 3) & 0xF) | ( (x & 0xF) >> 1));
 }
  
-//Left circular shift for unsigned int
+// Циклический сдвиг влево
 UINT TwoFish::ROL(UINT x, BYTE shift){
     BYTE shl = shift % (sizeof(x)*8);
     if (shl == 0) return x;
     return ((x << shl) | (x >> (sizeof(x)*8 - shl)));
 }
  
-//Right circular shift for unsigned int
+// Циклический сдвиг вправо
 UINT TwoFish::ROR(UINT x, BYTE shift){
     BYTE shl = shift % (sizeof(x)*8);
     if (shl == 0) return x;
