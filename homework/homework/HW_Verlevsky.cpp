@@ -109,8 +109,7 @@ int ECC::modInverse(int k, int p) {
     throw runtime_error("Обратный элемент не существует.");
 }
 
-void ECCprocessAudioFile(ifstream& audioFile) {
-    srand(static_cast<unsigned int>(time(0)));
+void ECCprocessAudioFile(vector<unsigned char>& audioBytes) {
 
     // Параметры эллиптической кривой
     ECC::Curve curve = { 2, 3, 97 };
@@ -118,14 +117,6 @@ void ECCprocessAudioFile(ifstream& audioFile) {
     int privateKey = 7;
 
     ECC ecc(curve, basePoint, privateKey);
-
-    if (!audioFile) {
-        cerr << "Не удалось открыть файл." << endl;
-        return;
-    }
-
-    vector<unsigned char> audioBytes((istreambuf_iterator<char>(audioFile)), istreambuf_iterator<char>());
-    audioFile.close();
 
     vector<int> normalizedAudio = ECC::normalizeAudioData(audioBytes, curve.p);
     vector<ECC::Point> encryptedPoints;
