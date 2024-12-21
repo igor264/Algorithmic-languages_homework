@@ -5,12 +5,12 @@
 #include <complex>
 #include <string>
 
-// Константы и типы данных
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 #define BUFFER_SIZE 1024
 using Complex = std::complex<double>;
 const double PI = 3.14159265358979323846;
 
-// WAV-заголовок
+// WAV-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 struct WavHeader {
     char riff[4] = { 'R', 'I', 'F', 'F' };
     int chunkSize;
@@ -29,13 +29,13 @@ struct WavHeader {
     WavHeader(int totalSamples);
 };
 
-// Функция для БПФ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ
 void FFT(std::vector<Complex>& data, bool inverse);
 
-// Функция для шифрования
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void multiplyCipher(std::vector<Complex>& data);
 
-// Функция для расшифровки с обратными правилами
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void multiplyDecipher(std::vector<Complex>& data);
 
 #endif // WAV_ENCRYPTION_H
