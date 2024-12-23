@@ -4,6 +4,7 @@
 #include <chrono>
 #include "shaev.h" 
 #include "demidov/demidov.cpp"
+#include "mudrov_des.h"
 // #include "petuhova/группач.cpp"
 // #include "HW_Verlevsky.cpp"
 
@@ -58,7 +59,7 @@ int main()
             // Преобразуем vector<unsigned char> в vector<BYTE>
             std::vector<BYTE> byteAudioData(audioData.begin(), audioData.end());
 
-            // Шифруем данные TwoFish и записываем в новый Wav файл
+            // Шифруем данные TwoFish 
             audioData = twoFishEncrypt(byteAudioData, key, sizeof(key));
         }
         case 3: // Petuhova Furie
@@ -71,7 +72,11 @@ int main()
         }
         case 5: // Mudrov DES
         {
-            // start(audioData);
+            // (8 байт для 64-битного ключа)
+            Key64 key = 0x133457799BBCDFF1; // Пример 64-битного ключа DES
+
+            // Шифруем данные DES
+            audioData = DesEncrypt(audioData, key);
         }
     }
      // Записываем результат (зашифрованные данные) в новый WAV файл

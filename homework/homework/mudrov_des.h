@@ -99,36 +99,15 @@ void processAudio(vector<uint8_t>& audioData, Key64 key, bool encrypt) {
     }
 }
 
-int main() {
-    string inputFile = "input_audio.wav";
-    string outputFile = "DES_output.wav";
-    Key64 key = 0x133457799BBCDFF1; // Пример 64-битного ключа DES
-
-    // Чтение аудио данных
-    vector<uint8_t> audioData;
-    if (!readWav(inputFile, audioData)) {
-        return 1;
-    }
-
+std::vector<uint8_t> DesEncrypt(vector<uint8_t> audioData, Key64 key) {
     // Шифрование аудио данных
     processAudio(audioData, key, true);
 
-    // Запись зашифрованного аудио в новый WAV файл
-    if (!writeWav(outputFile, audioData)) {
-        return 1;
-    }
-
-    cout << "Audio encryption complete. Output written to: " << outputFile << endl;
+    return audioData;
 
     // Для демонстрации, дешифруем обратно
-    vector<uint8_t> decryptedData = audioData;
-    processAudio(decryptedData, key, false);
+    // vector<uint8_t> decryptedData = audioData;
+    // processAudio(decryptedData, key, false);
 
-    if (!writeWav("DES_decrypted_output.wav", decryptedData)) {
-        return 1;
-    }
-
-    cout << "Audio decryption complete. Decrypted output written to: DES_decrypted_output.wav" << endl;
-
-    return 0;
+    // cout << "Audio decryption complete." << endl;
 }
