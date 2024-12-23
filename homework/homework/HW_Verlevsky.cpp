@@ -1,4 +1,4 @@
-﻿#include "ECC.h"
+#include "ECC.h"
 #include <fstream>
 #include <vector>
 #include <iostream>
@@ -109,9 +109,7 @@ int ECC::modInverse(int k, int p) {
     throw runtime_error("Обратный элемент не существует.");
 }
 
-int main() {
-    setlocale(LC_ALL, "RUS");
-    srand(static_cast<unsigned int>(time(0)));
+void ECCprocessAudioFile(vector<unsigned char>& audioBytes) {
 
     // Параметры эллиптической кривой
     ECC::Curve curve = { 2, 3, 97 };
@@ -119,20 +117,6 @@ int main() {
     int privateKey = 7;
 
     ECC ecc(curve, basePoint, privateKey);
-
-    // Выбор файла
-    string filename;
-    cout << "Введите путь к аудиофайлу: ";
-    cin >> filename;
-
-    ifstream audioFile(filename, ios::binary);
-    if (!audioFile) {
-        cerr << "Не удалось открыть файл." << endl;
-        return 1;
-    }
-
-    vector<unsigned char> audioBytes((istreambuf_iterator<char>(audioFile)), istreambuf_iterator<char>());
-    audioFile.close();
 
     vector<int> normalizedAudio = ECC::normalizeAudioData(audioBytes, curve.p);
     vector<ECC::Point> encryptedPoints;
@@ -150,13 +134,46 @@ int main() {
         }
     }
 
-    // Сохранение зашифрованных данных
-    ofstream outFile("encrypted_data.txt");
-    for (const ECC::Point& encrypted : encryptedPoints) {
-        outFile << encrypted.x << " " << encrypted.y << endl;
+    // Сохранение зашифрованных данных в формате WAV
+    ofstream encryptedWav("encrypted_audio.wav", ios::binary);
+    if (!encryptedWav) {
+        cerr << "Не удалось создать файл encrypted_audio.wav" << endl;
+        return;
     }
-    outFile.close();
-    cout << "Шифрование завершено, данные сохранены в encrypted_data.txt" << endl;
+
+    // Запись минимального заголовка WAV
+    uint32_t fileSize = 44 + encryptedPoints.size() * sizeof(int) * 2;
+    encryptedWav.write("RIFF", 4);
+    encryptedWav.write(reinterpret_cast<const char*>(&fileSize), sizeof(fileSize));
+    encryptedWav.write("WAVEfmt ", 8);
+
+    uint32_t subchunk1Size = 16;
+    uint16_t audioFormat = 1;
+    uint16_t numChannels = 1;
+    uint32_t sampleRate = 44100;
+    uint32_t byteRate = sampleRate * numChannels * sizeof(int);
+    uint16_t blockAlign = numChannels * sizeof(int);
+    uint16_t bitsPerSample = sizeof(int) * 8;
+
+    encryptedWav.write(reinterpret_cast<const char*>(&subchunk1Size), sizeof(subchunk1Size));
+    encryptedWav.write(reinterpret_cast<const char*>(&audioFormat), sizeof(audioFormat));
+    encryptedWav.write(reinterpret_cast<const char*>(&numChannels), sizeof(numChannels));
+    encryptedWav.write(reinterpret_cast<const char*>(&sampleRate), sizeof(sampleRate));
+    encryptedWav.write(reinterpret_cast<const char*>(&byteRate), sizeof(byteRate));
+    encryptedWav.write(reinterpret_cast<const char*>(&blockAlign), sizeof(blockAlign));
+    encryptedWav.write(reinterpret_cast<const char*>(&bitsPerSample), sizeof(bitsPerSample));
+
+    encryptedWav.write("data", 4);
+    uint32_t subchunk2Size = encryptedPoints.size() * sizeof(int) * 2;
+    encryptedWav.write(reinterpret_cast<const char*>(&subchunk2Size), sizeof(subchunk2Size));
+
+    // Запись данных
+    for (const ECC::Point& encrypted : encryptedPoints) {
+        encryptedWav.write(reinterpret_cast<const char*>(&encrypted.x), sizeof(encrypted.x));
+        encryptedWav.write(reinterpret_cast<const char*>(&encrypted.y), sizeof(encrypted.y));
+    }
+    encryptedWav.close();
+    cout << "Шифрование завершено, данные сохранены в encrypted_audio.wav" << endl;
 
     // Дешифрование
     cout << "Начинаю дешифрование..." << endl;
@@ -176,6 +193,4 @@ int main() {
     decryptedFile.write(reinterpret_cast<char*>(decryptedBytes.data()), decryptedBytes.size());
     decryptedFile.close();
     cout << "Дешифрование завершено, данные сохранены в decrypted_audio.wav" << endl;
-
-    return 0;
 }
