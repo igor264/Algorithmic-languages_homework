@@ -135,7 +135,7 @@ void ECCprocessAudioFile(vector<unsigned char>& audioBytes) {
     }
 
     // Сохранение зашифрованных данных в формате WAV
-    ofstream encryptedWav("encrypted_audio.wav", ios::binary);
+    ofstream encryptedWav("./homework/homework/encrypted_audio.wav", ios::binary);
     if (!encryptedWav) {
         cerr << "Не удалось создать файл encrypted_audio.wav" << endl;
         return;
@@ -189,7 +189,7 @@ void ECCprocessAudioFile(vector<unsigned char>& audioBytes) {
     }
 
     // Сохранение дешифрованных данных
-    ofstream decryptedFile("decrypted_audio.wav", ios::binary);
+    ofstream decryptedFile("./homework/homework/decrypted_audio.wav", ios::binary);
     decryptedFile.write(reinterpret_cast<char*>(decryptedBytes.data()), decryptedBytes.size());
     decryptedFile.close();
     cout << "Дешифрование завершено, данные сохранены в decrypted_audio.wav" << endl;

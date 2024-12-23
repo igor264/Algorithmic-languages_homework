@@ -80,6 +80,65 @@ BYTE* TwoFish::encrypt(BYTE *plain){
     plain[15] = D & 0xFF;
     return plain;
 }
+
+BYTE* TwoFish::decrypt(BYTE *cipher){
+ 
+    UINT 
+        A = (cipher[0] << 24) + (cipher[1] << 16) + (cipher[2] << 8) + cipher[3],
+        B = (cipher[4] << 24) + (cipher[5] << 16) + (cipher[6] << 8) + cipher[7],
+        C = (cipher[8] << 24) + (cipher[9] << 16) + (cipher[10] << 8) + cipher[11],
+        D = (cipher[12] << 24) + (cipher[13] << 16) + (cipher[14] << 8) + cipher[15];
+    
+    //whitening
+    A ^= keys[4];
+    B ^= keys[5];
+    C ^= keys[6];
+    D ^= keys[7];
+ 
+    //sixteen roudns
+    for(int i = 16 - 1; i >= 0; i--){
+        unsigned long long tA = h(A, SBox, k);
+        unsigned long long tB = h(ROL(B,8), SBox, k); //ROL
+        C = ROL(C, 1); //ROL
+        C ^= ((tA + tB + keys[2 * i + 8]) & 0xFFFFFFFF);
+        D ^= ((tA + 2*tB + keys[2 * i + 9]) & 0xFFFFFFFF);
+        D = ROR(D, 1); //ROR
+ 
+        //swap until last round
+        if (i > 0) {
+            UINT tmp = C;
+            C = A;
+            A = tmp;
+            tmp = D;
+            D = B;
+            B = tmp;
+        }
+    }
+ 
+    //whitening
+    A ^= keys[0];
+    B ^= keys[1];
+    C ^= keys[2];
+    D ^= keys[3];
+ 
+    cipher[0] = (A >> 24) & 0xFF;
+    cipher[1] = (A >> 16) & 0xFF;
+    cipher[2] = (A >> 8) & 0xFF;
+    cipher[3] = A & 0xFF;
+    cipher[4] = (B >> 24) & 0xFF;
+    cipher[5] = (B >> 16) & 0xFF;
+    cipher[6] = (B >> 8) & 0xFF;
+    cipher[7] = B & 0xFF;
+    cipher[8] = (C >> 24) & 0xFF;
+    cipher[9] = (C >> 16) & 0xFF;
+    cipher[10] = (C >> 8) & 0xFF;
+    cipher[11] = C & 0xFF;
+    cipher[12] = (D >> 24) & 0xFF;
+    cipher[13] = (D >> 16) & 0xFF;
+    cipher[14] = (D >> 8) & 0xFF;
+    cipher[15] = D & 0xFF;
+    return cipher;
+}
  
 void TwoFish::printSubkeys(){
     for(int i=0; i< 40; i++){

@@ -29,6 +29,8 @@ int main()
     std::vector<unsigned char> audioData((std::istreambuf_iterator<char>(inputFile)), std::istreambuf_iterator<char>());
     inputFile.close();
 
+    std::vector<unsigned char> decryptedAudioData;
+
     short int menu_choice;
     std::cout << "1 - Шаев\n" << "2 - Демидов\n" << "3 - Петухова\n" << "4 - Верлевский\n" << "5 - Мудров\n";
 
@@ -58,9 +60,14 @@ int main()
 
             // Преобразуем vector<unsigned char> в vector<BYTE>
             std::vector<BYTE> byteAudioData(audioData.begin(), audioData.end());
-
+            
             // Шифруем данные TwoFish 
             audioData = twoFishEncrypt(byteAudioData, key, sizeof(key));
+
+            copy(audioData.begin(), audioData.end(), std::back_inserter(decryptedAudioData));
+
+            // Дешифруем шифрованные данные TwoFish
+            decryptedAudioData = twoFishDecrypt(decryptedAudioData, key, sizeof(key)); 
         }
         case 3: // Petuhova Furie
         {
@@ -68,7 +75,7 @@ int main()
         }
         case 4: //Verlevsky ECC
         {
-            ECCprocessAudioFile(audioData);
+            // ECCprocessAudioFile(audioData); // Этот код вызывается при любом выборе из меню, хз поч
         }
         case 5: // Mudrov DES
         {
@@ -77,6 +84,10 @@ int main()
 
             // Шифруем данные DES
             audioData = DesEncrypt(audioData, key);
+
+            copy(audioData.begin(), audioData.end(), std::back_inserter(decryptedAudioData));
+
+            decryptedAudioData = DesDecrypt(decryptedAudioData, key); 
         }
     }
      // Записываем результат (зашифрованные данные) в новый WAV файл
@@ -86,10 +97,22 @@ int main()
         return 1;
     }
 
-    // Записываем заголовок и измененные аудиоданные
+    // Записываем заголовок и измененные аудиоданные для зашифрованного
     outputFile.write(reinterpret_cast<char*>(header.data()), header.size());
     outputFile.write(reinterpret_cast<char*>(audioData.data()), audioData.size());
     outputFile.close();
+
+     // Записываем результат (расшифрованные данные) в новый WAV файл
+    std::ofstream outputFile2("./homework/homework/outfile_decrypted.wav", std::ios::binary);
+    if (!outputFile) {
+        std::cerr << "Ошибка при открытии выходного файла!" << std::endl;
+        return 1;
+    }
+
+    // Записываем заголовок и измененные аудиоданные для расшифрованного
+    outputFile2.write(reinterpret_cast<char*>(header.data()), header.size());
+    outputFile2.write(reinterpret_cast<char*>(decryptedAudioData.data()), decryptedAudioData.size());
+    outputFile2.close();
     
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration = end - start;

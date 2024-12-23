@@ -104,10 +104,11 @@ std::vector<uint8_t> DesEncrypt(vector<uint8_t> audioData, Key64 key) {
     processAudio(audioData, key, true);
 
     return audioData;
+}
 
-    // Для демонстрации, дешифруем обратно
-    // vector<uint8_t> decryptedData = audioData;
-    // processAudio(decryptedData, key, false);
+std::vector<uint8_t> DesDecrypt(vector<uint8_t> audioData, Key64 key) {
+    // Шифрование аудио данных
+    processAudio(audioData, key, false);
 
-    // cout << "Audio decryption complete." << endl;
+    return audioData;
 }
