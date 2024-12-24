@@ -1,38 +1,39 @@
-п»ї#include <iostream>
+#include <iostream>
 #include <fstream>
 #include <vector>
 #include <chrono>
 #include "shaev.h" 
 #include "demidov/demidov.cpp"
 #include "mudrov_des.h"
-// #include "petuhova/РіСЂСѓРїРїР°С‡.cpp"
+// #include "petuhova/группач.cpp"
 #include "HW_Verlevsky.cpp"
 
 using std::cin;
 
 int main()
 {
+    setlocale(LC_ALL, "RUS");
     const std::string inputFilePath = "./homework/homework/input_audio.wav";
 
-    // РћС‚РєСЂС‹РІР°РµРј РІС…РѕРґРЅРѕР№ С„Р°Р№Р»
+    // Открываем входной файл
     std::ifstream inputFile(inputFilePath, std::ios::binary);
     if (!inputFile) {
-        std::cerr << "РћС€РёР±РєР° РѕС‚РєСЂС‹С‚РёСЏ С„Р°Р№Р»Р°!" << std::endl;
+        std::cerr << "Ошибка открытия файла!" << std::endl;
         return 1;
     }
 
-    // Р§РёС‚Р°РµРј Р·Р°РіРѕР»РѕРІРѕРє (РїРµСЂРІС‹Рµ 44 Р±Р°Р№С‚Р° WAV) (РґР»СЏ СЃС‚Р°РЅРґР°СЂС‚РЅРѕРіРѕ С„РѕСЂРјР°С‚Р° wav С‚Р°Рј РЅР°С…РѕРґРёС‚СЃСЏ Р·Р°РіРѕР»РѕРІРѕС‡РЅС‹Рµ РґР°РЅРЅС‹Рµ)
+    // Читаем заголовок (первые 44 байта WAV) (для стандартного формата wav там находится заголовочные данные)
     std::vector<unsigned char> header(44);
     inputFile.read(reinterpret_cast<char*>(header.data()), header.size());
 
-    // Р§РёС‚Р°РµРј Р°СѓРґРёРѕРґР°РЅРЅС‹Рµ
+    // Читаем аудиоданные
     std::vector<unsigned char> audioData((std::istreambuf_iterator<char>(inputFile)), std::istreambuf_iterator<char>());
     inputFile.close();
 
     std::vector<unsigned char> decryptedAudioData;
 
     short int menu_choice;
-    std::cout << "1 - РЁР°РµРІ\n" << "2 - Р”РµРјРёРґРѕРІ\n" << "3 - РџРµС‚СѓС…РѕРІР°\n" << "4 - Р’РµСЂР»РµРІСЃРєРёР№\n" << "5 - РњСѓРґСЂРѕРІ\n";
+    std::cout << "1 - Шаев\n" << "2 - Демидов\n" << "3 - Петухова\n" << "4 - Верлевский\n" << "5 - Мудров\n";
 
     while (!(cin >> menu_choice) || (cin.peek() != '\n') || (menu_choice < 1 || menu_choice > 5)) {
         cin.clear();
@@ -40,33 +41,33 @@ int main()
         std::cout << "" << "Select correct item from menu:\n";
     };
 
-    // Р—Р°РјРµСЂ РІСЂРµРјРµРЅРё С€РёС„СЂРѕРІР°РЅРёСЏ
+    // Замер времени шифрования
     auto start = std::chrono::high_resolution_clock::now();
 
     switch (menu_choice) 
     {
         case 1: // shaev RC4
         {
-            // РџСЂРёРјРµСЂ РєР»СЋС‡Р° РґР»СЏ С€РёС„СЂРѕРІР°РЅРёСЏ RC4
-            std::vector<unsigned char> key_shaev = { 0x1A, 0x2B, 0x3C, 0x4D, 0x5E, 0x6F };  // РџСЂРёРјРµСЂ РєР»СЋС‡Р°
+            // Пример ключа для шифрования RC4
+            std::vector<unsigned char> key_shaev = { 0x1A, 0x2B, 0x3C, 0x4D, 0x5E, 0x6F };  // Пример ключа
 
-            // РЁРёС„СЂСѓРµРј РґР°РЅРЅС‹Рµ RC4
+            // Шифруем данные RC4
             rc4EncryptDecrypt(audioData, key_shaev);
         }
         case 2: // demidov TwoFish
         {
-            // РљР»СЋС‡ (16 Р±Р°Р№С‚ РґР»СЏ 128-Р±РёС‚РЅРѕРіРѕ РєР»СЋС‡Р°)
+            // Ключ (16 байт для 128-битного ключа)
             BYTE key[16] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
 
-            // РџСЂРµРѕР±СЂР°Р·СѓРµРј vector<unsigned char> РІ vector<BYTE>
+            // Преобразуем vector<unsigned char> в vector<BYTE>
             std::vector<BYTE> byteAudioData(audioData.begin(), audioData.end());
             
-            // РЁРёС„СЂСѓРµРј РґР°РЅРЅС‹Рµ TwoFish 
+            // Шифруем данные TwoFish 
             audioData = twoFishEncrypt(byteAudioData, key, sizeof(key));
 
             copy(audioData.begin(), audioData.end(), std::back_inserter(decryptedAudioData));
 
-            // Р”РµС€РёС„СЂСѓРµРј С€РёС„СЂРѕРІР°РЅРЅС‹Рµ РґР°РЅРЅС‹Рµ TwoFish
+            // Дешифруем шифрованные данные TwoFish
             decryptedAudioData = twoFishDecrypt(decryptedAudioData, key, sizeof(key)); 
         }
         case 3: // Petuhova Furie
@@ -75,14 +76,14 @@ int main()
         }
         case 4: //Verlevsky ECC
         {
-            // ECCprocessAudioFile(audioData); // Р­С‚РѕС‚ РєРѕРґ РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё Р»СЋР±РѕРј РІС‹Р±РѕСЂРµ РёР· РјРµРЅСЋ, С…Р· РїРѕС‡
+            // ECCprocessAudioFile(audioData); // Этот код вызывается при любом выборе из меню, хз поч
         }
         case 5: // Mudrov DES
         {
-            // (8 Р±Р°Р№С‚ РґР»СЏ 64-Р±РёС‚РЅРѕРіРѕ РєР»СЋС‡Р°)
-            Key64 key = 0x133457799BBCDFF1; // РџСЂРёРјРµСЂ 64-Р±РёС‚РЅРѕРіРѕ РєР»СЋС‡Р° DES
+            // (8 байт для 64-битного ключа)
+            Key64 key = 0x133457799BBCDFF1; // Пример 64-битного ключа DES
 
-            // РЁРёС„СЂСѓРµРј РґР°РЅРЅС‹Рµ DES
+            // Шифруем данные DES
             audioData = DesEncrypt(audioData, key);
 
             copy(audioData.begin(), audioData.end(), std::back_inserter(decryptedAudioData));
@@ -90,33 +91,33 @@ int main()
             decryptedAudioData = DesDecrypt(decryptedAudioData, key); 
         }
     }
-     // Р—Р°РїРёСЃС‹РІР°РµРј СЂРµР·СѓР»СЊС‚Р°С‚ (Р·Р°С€РёС„СЂРѕРІР°РЅРЅС‹Рµ РґР°РЅРЅС‹Рµ) РІ РЅРѕРІС‹Р№ WAV С„Р°Р№Р»
+     // Записываем результат (зашифрованные данные) в новый WAV файл
     std::ofstream outputFile("./homework/homework/outfile_encrypted.wav", std::ios::binary);
     if (!outputFile) {
-        std::cerr << "РћС€РёР±РєР° РїСЂРё РѕС‚РєСЂС‹С‚РёРё РІС‹С…РѕРґРЅРѕРіРѕ С„Р°Р№Р»Р°!" << std::endl;
+        std::cerr << "Ошибка при открытии выходного файла!" << std::endl;
         return 1;
     }
 
-    // Р—Р°РїРёСЃС‹РІР°РµРј Р·Р°РіРѕР»РѕРІРѕРє Рё РёР·РјРµРЅРµРЅРЅС‹Рµ Р°СѓРґРёРѕРґР°РЅРЅС‹Рµ РґР»СЏ Р·Р°С€РёС„СЂРѕРІР°РЅРЅРѕРіРѕ
+    // Записываем заголовок и измененные аудиоданные для зашифрованного
     outputFile.write(reinterpret_cast<char*>(header.data()), header.size());
     outputFile.write(reinterpret_cast<char*>(audioData.data()), audioData.size());
     outputFile.close();
 
-     // Р—Р°РїРёСЃС‹РІР°РµРј СЂРµР·СѓР»СЊС‚Р°С‚ (СЂР°СЃС€РёС„СЂРѕРІР°РЅРЅС‹Рµ РґР°РЅРЅС‹Рµ) РІ РЅРѕРІС‹Р№ WAV С„Р°Р№Р»
+     // Записываем результат (расшифрованные данные) в новый WAV файл
     std::ofstream outputFile2("./homework/homework/outfile_decrypted.wav", std::ios::binary);
     if (!outputFile) {
-        std::cerr << "РћС€РёР±РєР° РїСЂРё РѕС‚РєСЂС‹С‚РёРё РІС‹С…РѕРґРЅРѕРіРѕ С„Р°Р№Р»Р°!" << std::endl;
+        std::cerr << "Ошибка при открытии выходного файла!" << std::endl;
         return 1;
     }
 
-    // Р—Р°РїРёСЃС‹РІР°РµРј Р·Р°РіРѕР»РѕРІРѕРє Рё РёР·РјРµРЅРµРЅРЅС‹Рµ Р°СѓРґРёРѕРґР°РЅРЅС‹Рµ РґР»СЏ СЂР°СЃС€РёС„СЂРѕРІР°РЅРЅРѕРіРѕ
+    // Записываем заголовок и измененные аудиоданные для расшифрованного
     outputFile2.write(reinterpret_cast<char*>(header.data()), header.size());
     outputFile2.write(reinterpret_cast<char*>(decryptedAudioData.data()), decryptedAudioData.size());
     outputFile2.close();
     
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration = end - start;
-    std::cout << "Р’СЂРµРјСЏ С€РёС„СЂРѕРІР°РЅРёСЏ: " << duration.count() << " СЃРµРєСѓРЅРґ" << std::endl;
+    std::cout << "Время шифрования: " << duration.count() << " секунд" << std::endl;
 
     return 0;
 }
